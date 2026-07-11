@@ -1,44 +1,70 @@
-name: Build
+# name: Build
 # on:
 #   push:
-#     branches:
-#       - main
+#     branches: [ "main" ]
 #   pull_request:
-#     types: [opened, synchronize, reopened]
+#     branches: [ "main" ]    
+# jobs:
+#   build:
+#     name: Build
+#     runs-on: ubuntu-latest
+#     env:
+#       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
+#     steps:
+#       - uses: actions/checkout@v6
+#         with:
+#           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+#       - name: Install Build Wrapper
+#         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v7
+#         env:
+#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # SonarQube URL is stored in a GitHub secret
+#       - name: Run Build Wrapper
+#         run: |
+#           autoreconf --install
+#           ./configure
+#           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make clean all     
+#       - name: SonarQube Scan
+#         uses: SonarSource/sonarqube-scan-action@v7
+#         env:
+#           SONAR_TOKEN: ${{ secrets.MySonar_Token }}
+#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#         with:
+#           args: >
+#             --define sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json
+#             --define sonar.analysis.detectedci=true           
+
+name: Build
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]    
+    branches: [ "main" ]
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     env:
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
+
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout code
+        uses: actions/checkout@v6
         with:
-          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0 # Shallow clones disabled for better relevancy of analysis
+
       - name: Install Build Wrapper
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v7
         env:
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # SonarQube URL is stored in a GitHub secret
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
       - name: Run Build Wrapper
         run: |
           autoreconf --install
           ./configure
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make clean all
-      # - name: SonarQube Scan
-      #   uses: SonarSource/sonarqube-scan-action@v7
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.MySonar_Token }} # Put the name of your token here
-      #     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # SonarQube URL is stored in a GitHub secret
-      #   with:
-      #     # if you are using using sonarqube 10.5 or earlier, replace sonar.cfamily.compile-commands with sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
-      #     # as build-wrapper does not generate a compile_commands.json file before sonarqube 10.6       
-      #     args: >
-      #       --define sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v7
         env:
@@ -47,4 +73,3 @@ jobs:
         with:
           args: >
             --define sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json
-            --define sonar.analysis.detectedci=true           
