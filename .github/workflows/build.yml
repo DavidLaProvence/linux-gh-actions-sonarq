@@ -1,52 +1,3 @@
-# name: Build
-
-# on:
-#   push:
-#     branches: [ "main" ]
-#   pull_request:
-#     branches: [ "main" ]
-
-# jobs:
-#   build:
-#     name: Build
-#     runs-on: ubuntu-latest
-#     env:
-#       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
-
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v6
-#         with:
-#           fetch-depth: 0 # Shallow clones disabled for better relevancy of analysis
-
-#       - name: Install Build Wrapper
-#         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v7
-#         env:
-#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-#       - name: Run Build Wrapper
-#         run: |
-#           autoreconf --install
-#           ./configure
-#           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make clean all
-
-#       - name: Upload build artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: sonar_scanner_example
-#           path: src/sonar_scanner_example
-#           retention-days: 7
-
-#       - name: SonarQube Scan
-#         uses: SonarSource/sonarqube-scan-action@v7
-#         env:
-#           SONAR_TOKEN: ${{ secrets.MySonar_Token }}
-#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#         with:
-#           args: >
-#             --define sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json
-
-
 name: Build
 
 on:
@@ -68,11 +19,10 @@ jobs:
         with:
           fetch-depth: 0 # Shallow clones disabled for better relevancy of analysis
 
-      - name: Download Build Wrapper
-        run: |
-          curl -sSLo build-wrapper-linux-x86.zip ${{ secrets.SONAR_HOST_URL }}/static/cpp/build-wrapper-linux-x86.zip
-          unzip -q build-wrapper-linux-x86.zip
-          echo "$(pwd)/build-wrapper-linux-x86" >> $GITHUB_PATH
+      - name: Install Build Wrapper
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v7
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
       - name: Run Build Wrapper
         run: |
